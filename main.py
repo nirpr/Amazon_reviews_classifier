@@ -32,19 +32,19 @@ def classify(train_file, test_file):
     x_test = []
     y_test = []
 
-    fields = ['reviewText', 'overall', 'summary']
+    fields = ['reviewText', 'overall', 'summary', 'verified']
     for review in train_data:
-        if all(field in review for field in fields):
+        if all(field in review for field in fields) and review['verified']:
             x_train.append(review['reviewText'] + '. ' + review['summary'])
             y_train.append(review['overall'])
 
     for review in test_data:
-        if all(field in review for field in fields):
+        if all(field in review for field in fields) and review['verified']:
             x_test.append(review['reviewText'] + '. ' + review['summary'])
             y_test.append(review['overall'])
 
-    ngram_range = (1, 3)
-    vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=1000)  # the max_features hurts the accuracy
+    ngram_range = (1, 1)
+    vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=1000)
     x_train_vec = vectorizer.fit_transform(x_train)
     x_test_vec = vectorizer.transform(x_test)
 
