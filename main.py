@@ -8,6 +8,11 @@ import numpy as np
 
 
 def load_json_data(file_path):
+    """
+    The function gets a file path, opens it and organizes it in a list of dictionaries.
+    :param file_path: path to a Json file with multiple Json objects.
+    :return: list of dictionaries.
+    """
     json_list = []
     with open(file_path, 'r') as file:
         for jsonObj in file:
@@ -17,18 +22,13 @@ def load_json_data(file_path):
     return json_list
 
 
-def classify(train_file, test_file):
-    # todo: implement this function
-    print(f'starting feature extraction and classification, train data: {train_file} and test: {test_file}')
-
-    # todo: you can try working with various classifiers from sklearn:
-    #  https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html
-    #  https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
-    #  https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
-    #  please use the LogisticRegression classifier in the version you submit
-    train_data = load_json_data(train_file)
-    test_data = load_json_data(test_file)
-
+def init_data(train_data, test_data):
+    """
+    Initializes the data from the list of dictionaries to train set and test set.
+    :param train_data: list of dictionaries that represent multiple Json objects
+    :param test_data: list of dictionaries that represent multiple Json objects
+    :return: x and y train and test sets.
+    """
     x_train = []
     y_train = []
     x_test = []
@@ -45,18 +45,46 @@ def classify(train_file, test_file):
             x_test.append(review['reviewText'] + '. ' + review['summary'])
             y_test.append(review['overall'])
 
-    ngram_range = (1, 1)
-    vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=1000)
-    x_train_vec = vectorizer.fit_transform(x_train)
-    x_test_vec = vectorizer.transform(x_test)
-    features_names = vectorizer.get_feature_names_out()
+    return x_train, y_train, x_test, y_test
 
+
+def print_k_best(x_train_vec, y_train, features_names):
+    """
+    The function finds and prints the 15 best features of the model.
+    :param x_train_vec: a vector with x train data
+    :param y_train: a list with y train data
+    :param features_names: an array with features names
+    :return: None
+    """
     k_best = SelectKBest(k=15)
     k_best.fit_transform(x_train_vec, y_train)
     best_features = k_best.get_support()
     features = np.array(features_names)
 
     print(f'15 best features: {features[best_features]}')
+
+
+def classify(train_file, test_file):
+    """
+    The function classify reviews to 5 different classes from 1 to 5, prints the confusion matrix
+     and returns the accuracy of the test.
+    :param train_file: path to a Json file with Json multiple objects
+    :param test_file: path to a Json file with Json multiple objects
+    :return: results of the test
+    """
+    print(f'starting feature extraction and classification, train data: {train_file} and test: {test_file}')
+    train_data = load_json_data(train_file)
+    test_data = load_json_data(test_file)
+
+    x_train, y_train, x_test, y_test = init_data(train_data, test_data)
+
+    ngram_range = (1, 1)
+    vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=1000)
+    x_train_vec = vectorizer.fit_transform(x_train)
+    x_test_vec = vectorizer.transform(x_test)
+    features_names = vectorizer.get_feature_names_out()
+
+    print_k_best(x_train_vec, y_train, features_names)
 
     classifier = LogisticRegression(max_iter=1000, solver='sag')
     classifier.fit(x_train_vec, y_train)
