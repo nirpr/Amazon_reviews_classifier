@@ -3,6 +3,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
+from sklearn.feature_selection import SelectKBest
+import numpy as np
 
 
 def load_json_data(file_path):
@@ -47,6 +49,14 @@ def classify(train_file, test_file):
     vectorizer = TfidfVectorizer(ngram_range=ngram_range, max_features=1000)
     x_train_vec = vectorizer.fit_transform(x_train)
     x_test_vec = vectorizer.transform(x_test)
+    features_names = vectorizer.get_feature_names_out()
+
+    k_best = SelectKBest(k=15)
+    k_best.fit_transform(x_train_vec, y_train)
+    best_features = k_best.get_support()
+    features = np.array(features_names)
+
+    print(f'15 best features: {features[best_features]}')
 
     classifier = LogisticRegression(max_iter=1000, solver='sag')
     classifier.fit(x_train_vec, y_train)
