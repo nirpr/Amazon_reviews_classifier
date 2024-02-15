@@ -37,13 +37,15 @@ def init_data(train_data, test_data):
     fields = ['reviewText', 'overall', 'summary', 'verified']
     for review in train_data:
         if all(field in review for field in fields) and review['verified']:
-            x_train.append(review['reviewText'] + '. ' + review['summary'])
-            y_train.append(review['overall'])
+            if review['reviewText'] is not None and review['summary'] is not None:
+                x_train.append(review['reviewText'] + '. ' + review['summary'])
+                y_train.append(review['overall'])
 
     for review in test_data:
         if all(field in review for field in fields) and review['verified']:
-            x_test.append(review['reviewText'] + '. ' + review['summary'])
-            y_test.append(review['overall'])
+            if review['reviewText'] is not None and review['summary'] is not None:
+                x_test.append(review['reviewText'] + '. ' + review['summary'])
+                y_test.append(review['overall'])
 
     return x_train, y_train, x_test, y_test
 
